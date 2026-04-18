@@ -1,36 +1,21 @@
 #include <Arduino.h>
-#include <Adafruit_MPU6050.h>
-#include <Adafruit_Sensor.h>
 #include <Wire.h>
+#include "event_detectors.h"
 
 #define SERIAL_BAUD 115200
-#define PIN_BUTTON 2
-#define SPEAKER_PIN 0  
-#define LED_PIN 1      
-#define UMBRAL_MOVIMIENTO 2.5 // Sensibilidad: cuanto menor el número, más sensible
+#define SPEAKER_PIN 0
+#define LED_PIN     1
+#define TOTAL_ESTADOS 3
 
 Adafruit_MPU6050 mpu;
 float lastX, lastY, lastZ;
 
-enum Estado {
-  APAGADO = 0,
-  ACTIVO,
-  ALERTADO,
-  TOTAL_ESTADOS
-};
-
-enum Evento {
-  APAGAR = 0,
-  PRENDER,
-  MOV_DETECTADO,
-  TOTAL_EVENTOS
-};
+Evento newEvent;
+short  lastIndexTypeSensor = 0;
 
 typedef void (*Accion)();
 
 Estado estadoActual = APAGADO;
-
-const Evento EVENTO_INVALIDO = TOTAL_EVENTOS;
 
 void iniciaMPU(){
   Wire.begin(); 
@@ -55,10 +40,6 @@ void guardaPosicion(){
   lastX = a.acceleration.x;
   lastY = a.acceleration.y;
   lastZ = a.acceleration.z;
-}
-
-void nada() {
-  Serial.println("Evento sin accion");
 }
 
 void prender() {
@@ -90,61 +71,18 @@ void errorTransicion() {
 }
 
 const Accion MATRIZ_TRANSICION[TOTAL_ESTADOS][TOTAL_EVENTOS] = {
-  // APAGAR, PRENDER, MOV_DETECTADO
-  { errorTransicion, prender,       errorTransicion }, // APAGADO
-  { apagar,          errorTransicion, alertar        }, // ACTIVO
-  { apagar,          errorTransicion, errorTransicion } // ALERTADO
+  // APAGAR, PRENDER, MOV_DETECTADO, TOUCH_DETECTADO
+  { errorTransicion, prender,       errorTransicion, errorTransicion }, // APAGADO
+  { apagar,          errorTransicion, alertar,       alertar }, // ACTIVO
+  { apagar,          errorTransicion, errorTransicion, errorTransicion } // ALERTADO
 };
 
-Evento detectaBoton() {
-  if (digitalRead(PIN_BUTTON) == LOW) {
-    if (estadoActual == APAGADO) {
-      delay(500);
-      return PRENDER;
-    } else {
-      delay(500);
-      return APAGAR;
-    }
-  }
-
-  return EVENTO_INVALIDO;
-}
-
-bool detectaMovimientoBrusco(){
-  sensors_event_t a, g, temp;
-  mpu.getEvent(&a, &g, &temp);
-  float diffX = abs(a.acceleration.x - lastX);
-  float diffY = abs(a.acceleration.y - lastY);
-  float diffZ = abs(a.acceleration.z - lastZ);
-  if (diffX > UMBRAL_MOVIMIENTO || diffY > UMBRAL_MOVIMIENTO || diffZ > UMBRAL_MOVIMIENTO) {
-    return true;
-  }
-  return false;
-}
-
-Evento detectaMovimiento(){
-  if (estadoActual == ACTIVO && detectaMovimientoBrusco()) {
-    return MOV_DETECTADO;
-  }
-
-  return EVENTO_INVALIDO;
-}
-
-Evento getNuevoEvento() {
-  Evento evento = detectaBoton();
-  if (evento != EVENTO_INVALIDO) {
-    return evento;
-  }
-
-  return detectaMovimiento();
-}
-
 void loop() {
-  Evento nuevoEvento = getNuevoEvento();
-
-  if ((nuevoEvento >= 0) && (nuevoEvento < TOTAL_EVENTOS) &&
-      (estadoActual >= 0) && (estadoActual < TOTAL_ESTADOS)) {
-    MATRIZ_TRANSICION[estadoActual][nuevoEvento]();
+  if (getNuevoEvento()) {
+    if ((newEvent >= 0) && (newEvent < TOTAL_EVENTOS) &&
+        (estadoActual >= 0) && (estadoActual < TOTAL_ESTADOS)) {
+      MATRIZ_TRANSICION[estadoActual][newEvent]();
+    }
   }
 
   delay(100);
