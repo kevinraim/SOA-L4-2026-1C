@@ -15,7 +15,9 @@
 enum Estado {
   APAGADO,
   ACTIVO,
-  ALERTADO
+  ADVERTENCIA_MOVIMIENTO,
+  ADVERTENCIA_CONTACTO,
+  ALERTA
 };
 
 enum Evento {

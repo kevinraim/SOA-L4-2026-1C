@@ -5,7 +5,7 @@
 #define SERIAL_BAUD 115200
 #define SPEAKER_PIN 0
 #define LED_PIN     1
-#define TOTAL_ESTADOS 3
+#define TOTAL_ESTADOS 5
 
 Adafruit_MPU6050 mpu;
 float lastX, lastY, lastZ;
@@ -50,16 +50,30 @@ void prender() {
   estadoActual = ACTIVO;
 }
 
+void advertirMovimiento() {
+  Serial.println(">>> ADVERTENCIA: Movimiento detectado");
+  digitalWrite(LED_PIN, HIGH);
+  noTone(SPEAKER_PIN);
+  estadoActual = ADVERTENCIA_MOVIMIENTO;
+}
+
+void advertirContacto() {
+  Serial.println(">>> ADVERTENCIA: Contacto detectado");
+  digitalWrite(LED_PIN, HIGH);
+  noTone(SPEAKER_PIN);
+  estadoActual = ADVERTENCIA_CONTACTO;
+}
+
 void alertar() {
-  Serial.println("¡MOVIMIENTO DETECTADO!");
+  Serial.println("¡ALERTA! Movimiento Y contacto detectados");
   digitalWrite(LED_PIN, HIGH);
   tone(SPEAKER_PIN, 880);
-  estadoActual = ALERTADO;
+  estadoActual = ALERTA;
 }
 
 void apagar() {
   Serial.println(">>> SISTEMA DESARMADO");
-  if (estadoActual == ALERTADO) {
+  if (estadoActual == ALERTA) {
     noTone(SPEAKER_PIN);
   }
   digitalWrite(LED_PIN, LOW);
@@ -71,10 +85,12 @@ void errorTransicion() {
 }
 
 const Accion MATRIZ_TRANSICION[TOTAL_ESTADOS][TOTAL_EVENTOS] = {
-  // APAGAR, PRENDER, MOV_DETECTADO, TOUCH_DETECTADO
-  { errorTransicion, prender,       errorTransicion, errorTransicion }, // APAGADO
-  { apagar,          errorTransicion, alertar,       alertar }, // ACTIVO
-  { apagar,          errorTransicion, errorTransicion, errorTransicion } // ALERTADO
+  // APAGAR,          PRENDER,          MOV_DETECTADO,     TOUCH_DETECTADO
+  { errorTransicion,  prender,          errorTransicion,   errorTransicion  }, // APAGADO
+  { apagar,           errorTransicion,  advertirMovimiento, advertirContacto }, // ACTIVO
+  { apagar,           errorTransicion,  errorTransicion,   alertar          }, // ADVERTENCIA_MOVIMIENTO
+  { apagar,           errorTransicion,  alertar,           errorTransicion  }, // ADVERTENCIA_CONTACTO
+  { apagar,           errorTransicion,  errorTransicion,   errorTransicion  }  // ALERTA
 };
 
 void loop() {

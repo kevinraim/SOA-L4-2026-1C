@@ -19,7 +19,7 @@ bool detectaMovimientoBrusco() {
 }
 
 bool detectaMovimientoEvent() {
-  if (estadoActual == ACTIVO && detectaMovimientoBrusco()) {
+  if ((estadoActual == ACTIVO || estadoActual == ADVERTENCIA_CONTACTO) && detectaMovimientoBrusco()) {
     newEvent = MOV_DETECTADO;
     return true;
   }
@@ -28,7 +28,7 @@ bool detectaMovimientoEvent() {
 
 bool detectaTouchEvent() {
   int potValue = analogRead(PIN_POTENCIOMETRO);
-  if (estadoActual == ACTIVO && potValue > UMBRAL_TOUCH) {
+  if ((estadoActual == ACTIVO || estadoActual == ADVERTENCIA_MOVIMIENTO) && potValue > UMBRAL_TOUCH) {
     newEvent = TOUCH_DETECTADO;
     return true;
   }
