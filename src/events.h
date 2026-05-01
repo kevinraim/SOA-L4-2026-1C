@@ -1,16 +1,16 @@
-#ifndef EVENT_DETECTORS_H
-#define EVENT_DETECTORS_H
+#ifndef EVENTS_H
+#define EVENTS_H
 
 #include <Arduino.h>
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
+#include <freertos/timers.h>
+#include "config.h"
 
-#define PIN_BUTTON          2
-#define PIN_POTENCIOMETRO   3
-#define UMBRAL_MOVIMIENTO   2.5
-#define UMBRAL_TOUCH        2000
-#define MAX_TYPE_EVENTS     3
-#define TOTAL_EVENTOS       4
+#define MAX_TYPE_EVENTS  4
+#define TOTAL_EVENTOS    5
 
 enum Estado {
   APAGADO,
@@ -24,7 +24,8 @@ enum Evento {
   APAGAR,
   PRENDER,
   MOV_DETECTADO,
-  TOUCH_DETECTADO
+  TOUCH_DETECTADO,
+  TIMEOUT_ADVERTENCIA
 };
 
 typedef bool (*EventDetector)();
@@ -36,10 +37,9 @@ extern Adafruit_MPU6050 mpu;
 extern float            lastX, lastY, lastZ;
 extern EventDetector    eventType[MAX_TYPE_EVENTS];
 
-bool detectaBotonEvent      ();
-bool detectaMovimientoBrusco();
-bool detectaMovimientoEvent ();
-bool detectaTouchEvent      ();
-bool getNuevoEvento         ();
+void initEventDetectors         ();
+void iniciarTimeoutAdvertencia  ();
+void cancelarTimeoutAdvertencia ();
+bool getNuevoEvento             ();
 
 #endif
