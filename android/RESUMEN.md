@@ -1,3 +1,22 @@
+## Clases importantes del proyecto
+
+Solo hay tres clases que escribimos nosotros. El resto (`Color.kt`, `Theme.kt`, `Type.kt`, `ExampleUnitTest.kt`, `ExampleInstrumentedTest.kt`) se genera automáticamente al crear el proyecto en Android Studio y no es necesario tocarlas.
+
+| Archivo | Qué hace |
+|---|---|
+| `app/src/main/java/.../MainActivity.kt` | Activity principal + UI en Compose + lógica de shake |
+| `app/src/main/java/.../sensors/ShakeDetector.kt` | Detecta el movimiento con el acelerómetro |
+| `app/src/main/java/.../service/MqttNotifierService.kt` | Maneja la conexión y publicación MQTT |
+
+### Dónde están las librerías
+
+Las dependencias se declaran en dos archivos:
+
+- **`gradle/libs.versions.toml`** — catálogo central con los nombres y versiones de todas las librerías (MQTT, Compose, Navigation, etc.)
+- **`app/build.gradle.kts`** — lista qué librerías usa la app (referencia los alias definidos en el `.toml`)
+
+---
+
 ## 1. Sensor — `ShakeDetector`
 
 Implementa `SensorEventListener` para recibir datos del acelerómetro. En cada lectura calcula la magnitud del movimiento con:
