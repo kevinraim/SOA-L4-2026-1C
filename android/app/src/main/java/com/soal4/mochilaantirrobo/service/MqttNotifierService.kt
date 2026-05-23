@@ -13,7 +13,8 @@ object MqttNotifierService {
 
     private lateinit var mqttClient: MqttClient
 
-    private const val BROKER_URL = "tcp://192.168.30.39:1883"
+    // TODO Actualizar
+    private const val BROKER_URL = "tcp://192.168.01.01:1883"
     private const val CLIENT_ID = "MochilaAndroidClient"
 
     private const val TOPIC_SHAKE = "my/shake"
@@ -28,8 +29,8 @@ object MqttNotifierService {
                 val options = MqttConnectOptions().apply {
                     isAutomaticReconnect = true
                     isCleanSession = false
-                    userName = "claromio"
-                    password = "RiverBest".toCharArray()
+                    userName = " "
+                    password = " ".toCharArray()
                 }
 
                 mqttClient.connect(options)
