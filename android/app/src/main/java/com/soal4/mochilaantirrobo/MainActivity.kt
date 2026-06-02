@@ -64,6 +64,7 @@ class MainActivity : ComponentActivity() {
 }
 
 // Solo dice que otros composables (pantallas) existen y cual es el principal.
+@Preview
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -79,6 +80,7 @@ fun AppNavigation() {
 
 // Las pantallas acá se definen así, no con un nuevo activity.
 // Se definene con @composable
+@Preview
 @Composable
 fun PantallaAjuste(navController: NavController? = null) {
 
@@ -149,6 +151,7 @@ fun PantallaAjuste(navController: NavController? = null) {
 
 // Esta es una pantalla de ejemplo para ver como navegar desde una pantalla a otra
 // Después se puede borrar
+@Preview
 @Composable
 fun PantallaInfo(navController: NavController? = null) {
     Scaffold { padding ->
