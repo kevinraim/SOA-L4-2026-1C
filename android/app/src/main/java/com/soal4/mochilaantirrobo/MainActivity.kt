@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
@@ -22,6 +23,9 @@ import com.soal4.mochilaantirrobo.service.MqttNotifierService
 import com.soal4.mochilaantirrobo.ui.theme.MochilaAntirroboTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+
 
 class MainActivity : ComponentActivity() {
 
@@ -69,11 +73,15 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "ajuste") {
+        composable("splash") { PantallaSplash(navController) }
         composable("ajuste") {
             PantallaAjuste(navController = navController)
         }
         composable("info") {
             PantallaInfo(navController = navController)
+        }
+        composable("notif"){
+            PantallaNotificaciones(navController = navController)
         }
     }
 }
@@ -129,6 +137,103 @@ fun PantallaAjuste(navController: NavController? = null) {
         }
     }
 }
+
+@Composable
+fun PantallaSplash(navController: NavController) {
+    LaunchedEffect(Unit) {
+        // Espera 2 segundos y navega a la pantalla principal
+        kotlinx.coroutines.delay(2000)
+        navController.navigate("ajuste") {
+            popUpTo("splash") { inclusive = true }
+        }
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            // Logo de la mochila
+            Icon(
+                painter = painterResource(id = R.drawable.logo_mochila),
+                contentDescription = "Logo",
+                modifier = Modifier.size(120.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("Secure Bag", style = MaterialTheme.typography.headlineMedium)
+        }
+    }
+}
+
+@Composable
+fun PantallaNotificaciones(navController: NavController? = null) {
+    // Datos de prueba: después los reemplazás con lo que venga de la BBDD
+    val notificaciones = listOf(
+        Notificacion("2026-06-05 21:30", "Sensor activado en la mochila"),
+        Notificacion("2026-06-05 20:15", "Sensibilidad ajustada a 80"),
+        Notificacion("2026-06-04 18:00", "Shake detectado")
+    )
+
+    Scaffold { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+        ) {
+            Text(
+                text = "Registro de Notificaciones",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(16.dp)
+            )
+
+            // Lista de notificaciones
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(notificaciones) { notif ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .padding(12.dp)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = notif.fechaHora,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = notif.descripcion,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { navController?.popBackStack() },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text("Volver")
+            }
+        }
+    }
+}
+
+// Modelo simple para la notificación
+data class Notificacion(
+    val fechaHora: String,
+    val descripcion: String
+)
 
 // Esta es una pantalla de ejemplo para ver como navegar desde una pantalla a otra
 // Después se puede borrar
