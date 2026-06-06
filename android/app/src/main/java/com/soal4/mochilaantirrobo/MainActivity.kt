@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -72,7 +73,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "ajuste") {
+    NavHost(navController = navController, startDestination = "splash") {
         composable("splash") { PantallaSplash(navController) }
         composable("ajuste") {
             PantallaAjuste(navController = navController)
@@ -153,6 +154,10 @@ fun PantallaAjuste(navController: NavController? = null) {
             OutlinedButton(onClick = { navController?.navigate("info") }) {
                 Text("Ir a pantalla info")
             }
+
+            OutlinedButton(onClick = { navController?.navigate("notif") }) {
+                Text("Ver historial de alertas")
+            }
         }
     }
 }
@@ -160,7 +165,6 @@ fun PantallaAjuste(navController: NavController? = null) {
 @Composable
 fun PantallaSplash(navController: NavController) {
     LaunchedEffect(Unit) {
-        // Espera 2 segundos y navega a la pantalla principal
         kotlinx.coroutines.delay(2000)
         navController.navigate("ajuste") {
             popUpTo("splash") { inclusive = true }
@@ -168,21 +172,26 @@ fun PantallaSplash(navController: NavController) {
     }
 
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            // Logo de la mochila
-            Icon(
+            Image(
                 painter = painterResource(id = R.drawable.logo_mochila),
-                contentDescription = "Logo",
-                modifier = Modifier.size(120.dp)
+                contentDescription = "Logo de la mochila",
+                modifier = Modifier.size(180.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Secure Bag", style = MaterialTheme.typography.headlineMedium)
+            Text(
+                text = "Mochila Antirrobo",
+                style = MaterialTheme.typography.headlineMedium
+            )
         }
     }
 }
+
 
 @Composable
 fun PantallaNotificaciones(navController: NavController? = null) {
