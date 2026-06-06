@@ -14,11 +14,11 @@ object MqttNotifierService {
     private lateinit var mqttClient: MqttClient
 
     // TODO Actualizar
-    private const val BROKER_URL = "tcp://192.168.01.01:1883"
+    private const val BROKER_URL = "tcp://0.tcp.sa.ngrok.io:29379"
     private const val CLIENT_ID = "MochilaAndroidClient"
 
-    private const val TOPIC_SHAKE = "my/shake"
-    private const val TOPIC_SENSIBILIDAD = "my/topic"
+    private const val TOPIC_SHAKE = "alarm/arm_dsrm"
+    private const val TOPIC_SENSIBILIDAD = "alarm/acelerometer_sens"
 
     fun conectar() {
 
@@ -41,11 +41,12 @@ object MqttNotifierService {
 
 
             } catch (e: Exception) {
+                println("Error al conectase por mqtt")
                 e.printStackTrace()
             }
         }
 
-    suspend fun enviarShake(): Void =
+    suspend fun enviarArmDsrm(): Void =
         suspendCoroutine {
             val topic = TOPIC_SHAKE
 

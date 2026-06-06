@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -38,14 +39,12 @@ class MainActivity : ComponentActivity() {
         shakeDetector = ShakeDetector(sensorManager)
         shakeDetector.onShake = {
             lifecycleScope.launch(Dispatchers.IO) {
-                MqttNotifierService.enviarShake()
+                MqttNotifierService.enviarArmDsrm()
             }
         }
 
         // TODO que no corra en una corutina
-        lifecycleScope.launch(Dispatchers.IO) {
-            MqttNotifierService.conectar()
-        }
+        MqttNotifierService.conectar()
 
         enableEdgeToEdge()
         setContent {
@@ -69,6 +68,7 @@ class MainActivity : ComponentActivity() {
 }
 
 // Solo dice que otros composables (pantallas) existen y cual es el principal.
+@Preview
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -88,9 +88,12 @@ fun AppNavigation() {
 
 // Las pantallas acá se definen así, no con un nuevo activity.
 // Se definene con @composable
+@Preview
 @Composable
 fun PantallaAjuste(navController: NavController? = null) {
-    var valorSlider by remember { mutableFloatStateOf(0f) }
+
+    var valorSlider by rememberSaveable { mutableFloatStateOf(0f) }
+    var isChecked by rememberSaveable { mutableStateOf(false) }
 
     // Define una corutina, corre las cosas en otro hilo que no es el principal
     // Es como crear un nuevo thread
@@ -108,9 +111,25 @@ fun PantallaAjuste(navController: NavController? = null) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Nivel de Sensibilidad: ${valorSlider.toInt()}")
+
+            Text("Prender o apagar la alarma")
+
+            Switch(
+
+                checked = isChecked,
+                onCheckedChange = { isChecked = it
+                    scope.launch {
+                        println("Enviando prendido/apagado via MQTT")
+                        val respuesta = MqttNotifierService.enviarArmDsrm()
+                        println("Respuesta: $respuesta")
+                    }
+                }
+            )
+
+            Text("Nivel de Sensibilidad: ${valorSlider.toInt()}", modifier = Modifier.padding(top = 30.dp))
 
             Slider(
+                enabled = isChecked,
                 value = valorSlider,
                 onValueChange = { valorSlider = it },
                 valueRange = 0f..100f,
@@ -237,6 +256,7 @@ data class Notificacion(
 
 // Esta es una pantalla de ejemplo para ver como navegar desde una pantalla a otra
 // Después se puede borrar
+@Preview
 @Composable
 fun PantallaInfo(navController: NavController? = null) {
     Scaffold { padding ->
