@@ -11,8 +11,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
@@ -25,9 +23,6 @@ import com.soal4.mochilaantirrobo.service.MqttNotifierService
 import com.soal4.mochilaantirrobo.ui.theme.MochilaAntirroboTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-
 
 class MainActivity : ComponentActivity() {
 
@@ -73,16 +68,15 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "splash") {
-        composable("splash") { PantallaSplash(navController) }
+    NavHost(navController = navController, startDestination = "ajuste") {
         composable("ajuste") {
             PantallaAjuste(navController = navController)
         }
         composable("info") {
             PantallaInfo(navController = navController)
         }
-        composable("notif"){
-            PantallaNotificaciones(navController = navController)
+        composable("melodias") {
+            PantallaMelodias(navController = navController)
         }
     }
 }
@@ -154,114 +148,14 @@ fun PantallaAjuste(navController: NavController? = null) {
             OutlinedButton(onClick = { navController?.navigate("info") }) {
                 Text("Ir a pantalla info")
             }
+            Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedButton(onClick = { navController?.navigate("notif") }) {
-                Text("Ver historial de alertas")
+            Button(onClick = { navController?.navigate("melodias") }) {
+                Text("Configurar Melodías de Alarma")
             }
         }
     }
 }
-
-@Composable
-fun PantallaSplash(navController: NavController) {
-    LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(2000)
-        navController.navigate("ajuste") {
-            popUpTo("splash") { inclusive = true }
-        }
-    }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(
-                painter = painterResource(id = R.drawable.logo_mochila),
-                contentDescription = "Logo de la mochila",
-                modifier = Modifier.size(180.dp)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Mochila Antirrobo",
-                style = MaterialTheme.typography.headlineMedium
-            )
-        }
-    }
-}
-
-
-@Composable
-fun PantallaNotificaciones(navController: NavController? = null) {
-    // Datos de prueba: después los reemplazás con lo que venga de la BBDD
-    val notificaciones = listOf(
-        Notificacion("2026-06-05 21:30", "Sensor activado en la mochila"),
-        Notificacion("2026-06-05 20:15", "Sensibilidad ajustada a 80"),
-        Notificacion("2026-06-04 18:00", "Shake detectado")
-    )
-
-    Scaffold { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-        ) {
-            Text(
-                text = "Registro de Notificaciones",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(16.dp)
-            )
-
-            // Lista de notificaciones
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(notificaciones) { notif ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(12.dp)
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = notif.fechaHora,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(
-                                text = notif.descripcion,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { navController?.popBackStack() },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text("Volver")
-            }
-        }
-    }
-}
-
-// Modelo simple para la notificación
-data class Notificacion(
-    val fechaHora: String,
-    val descripcion: String
-)
 
 // Esta es una pantalla de ejemplo para ver como navegar desde una pantalla a otra
 // Después se puede borrar
@@ -285,6 +179,62 @@ fun PantallaInfo(navController: NavController? = null) {
             Spacer(modifier = Modifier.height(24.dp))
             Button(onClick = { navController?.popBackStack() }) {
                 Text("Volver")
+            }
+        }
+    }
+}
+@Composable
+fun PantallaMelodias(navController: NavController? = null) {
+    val listaMelodias = remember {
+        listOf(
+            Pair("1", "Star Wars - Marcha Imperial"),
+            Pair("2", "Nokia Clásico"),
+            Pair("3", "Super Mario Bros (1-Up)"),
+            Pair("4", "Tetris Theme")
+        )
+    }
+    var idSeleccionado by remember { mutableStateOf("1") }
+    val scope = rememberCoroutineScope()
+
+    Scaffold { padding ->
+        Column(
+            modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Seleccioná la melodía para la mochila", style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                listaMelodias.forEach { melodia ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth().padding(8.dp)
+                    ) {
+                        RadioButton(
+                            selected = (idSeleccionado == melodia.first),
+                            onClick = { idSeleccionado = melodia.first }
+                        )
+                        Text(text = melodia.second, modifier = Modifier.padding(start = 8.dp))
+                    }
+                }
+            }
+
+            Button(
+                onClick = {
+                    scope.launch {
+                        println("Enviando melodía ID $idSeleccionado via MQTT")
+
+                        // LLAMADA CORREGIDA: Apunta a la nueva función dedicada
+                        val respuesta = MqttNotifierService.enviarRingtone(idSeleccionado.toInt())
+
+                        println(respuesta) // Esto te va a imprimir el éxito o falla en consola
+                    }
+                    navController?.popBackStack() // Vuelve a la pantalla del Slider
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Sincronizar Melodía")
             }
         }
     }
